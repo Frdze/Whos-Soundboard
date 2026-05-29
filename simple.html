@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meme Soundboard</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #121214;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .search-box {
+      padding: 12px 20px;
+      width: min(92vw, 320px);
+      font-size: 16px;
+      border-radius: 25px;
+      border: none;
+      outline: none;
+      background: #202024;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .soundboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 25px;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 10px;
+    }
+
+    .sound-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .buzzer {
+      width: 85px;
+      height: 85px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      background: radial-gradient(circle at 50% 30%, #ff4d4d 0%, #b30000 70%, #800000 100%);
+      box-shadow:
+        0 6px 0 #590000,
+        0 12px 10px rgba(0, 0, 0, 0.5),
+        inset 0 3px 5px rgba(255, 255, 255, 0.4);
+      transition: all 0.1s ease;
+    }
+
+    .buzzer:active {
+      transform: translateY(4px);
+      box-shadow:
+        0 2px 0 #590000,
+        0 4px 6px rgba(0, 0, 0, 0.6),
+        inset 0 2px 3px rgba(255, 255, 255, 0.2);
+    }
+
+    .buzzer.blue {
+      background: radial-gradient(circle at 50% 30%, #4da6ff 0%, #0066cc 70%, #004488 100%);
+      box-shadow: 0 6px 0 #002b59, 0 12px 10px rgba(0, 0, 0, 0.5), inset 0 3px 5px rgba(255, 255, 255, 0.4);
+    }
+
+    .buzzer.blue:active {
+      box-shadow: 0 2px 0 #002b59, 0 4px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .sound-title {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #c4c4cc;
+      max-width: 110px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <h1>Custom Meme Soundboard</h1>
+  <input type="text" id="searchBar" class="search-box" placeholder="Search sounds (e.g., bruh, vine)..." />
+
+  <div class="soundboard-grid" id="grid"></div>
+
+  <script>
+    const searchBar = document.getElementById("searchBar");
+    const grid = document.getElementById("grid");
+
+    let timeout = null;
+    searchBar.addEventListener("input", () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        fetchSounds(searchBar.value);
+      }, 400);
+    });
+
+    async function fetchSounds(query) {
+      const trimmed = String(query || "").trim();
+      if (!trimmed) {
+        grid.innerHTML = "";
+        return;
+      }
+
+      grid.innerHTML = "<p>Searching sounds...</p>";
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&max_pages=20`);
+        const data = await response.json();
+
+        grid.innerHTML = "";
+
+        data.forEach((sound, index) => {
+          const card = document.createElement("div");
+          card.className = "sound-card";
+
+          const colorClass = index % 2 === 0 ? "" : "blue";
+
+          card.innerHTML = `
+            <button class="buzzer ${colorClass}" onclick="playSound('${sound.mp3_url}')"></button>
+            <div class="sound-title" title="${sound.title}">${sound.title}</div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        grid.innerHTML = "<p>Error connecting to backend server.</p>";
+      }
+    }
+
+    function playSound(url) {
+      const audio = new Audio(url);
+      audio.currentTime = 0;
+      audio.play();
+    }
+  </script>
+</body>
+</html>

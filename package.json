@@ -1,0 +1,47 @@
+{
+  "name": "soundboard",
+  "version": "1.0.1",
+  "private": true,
+  "main": "main.js",
+  "description": "Desktop soundboard powered by Electron, Flask, and MyInstants search/download.",
+  "author": "GitHub Copilot",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "predist": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-build.ps1",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0"
+  },
+  "build": {
+    "appId": "com.soundboard.desktop",
+    "productName": "Soundboard",
+    "icon": "icon.ico",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "simple.html",
+      "icon.png",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "artifactName": "Soundboard-Setup-${version}.exe"
+    }
+  }
+}
